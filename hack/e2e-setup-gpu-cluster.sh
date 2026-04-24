@@ -67,6 +67,21 @@ sudo systemctl restart docker
 NVKIND_BIN="/root/go/bin/nvkind"
 sudo "$NVKIND_BIN" cluster create --name "${GPU_CLUSTER_NAME}" --image "${KIND_NODE_VERSION}"
 sudo "$NVKIND_BIN" cluster print-gpus
+(kubectl wait nodes \
+  --for=condition=Ready \
+  --timeout ${TIMEOUT} \
+  --all && \
+ kubectl wait pods \
+  --for=condition=ready \
+  -n kube-system \
+  --timeout ${TIMEOUT} \
+  --all) || (
+    echo "Failed to wait until Kind cluster is ready" &&
+    kubectl get pods -n kube-system &&
+    kubectl describe pods -n kube-system &&
+    kubectl describe nodes &&
+    exit 1
+)
 
 # Make kubeconfig available to non-root user
 mkdir -p "$HOME/.kube"

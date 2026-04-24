@@ -58,6 +58,21 @@ ${CONTAINER_RUNTIME} build . -f cmd/trainer-controller-manager/Dockerfile -t ${C
 
 echo "Create Kind cluster and load Kubeflow Trainer images"
 ${KIND} create cluster --image "${KIND_NODE_VERSION}"
+(kubectl wait nodes \
+  --for=condition=Ready \
+  --timeout ${TIMEOUT} \
+  --all && \
+ kubectl wait pods \
+  --for=condition=ready \
+  -n kube-system \
+  --timeout ${TIMEOUT} \
+  --all) || (
+    echo "Failed to wait until Kind cluster is ready" &&
+    kubectl get pods -n kube-system &&
+    kubectl describe pods -n kube-system &&
+    kubectl describe nodes &&
+    exit 1
+)
 
 # Load Trainer controller manager image in KinD
 load_image_to_kind ${CONTROLLER_MANAGER_CI_IMAGE}
