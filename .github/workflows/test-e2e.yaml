@@ -2,11 +2,12 @@ name: E2E Test
 
 on:
   - pull_request
+  - push
 
 jobs:
   e2e-test:
     name: E2E Test
-    runs-on: oracle-vm-16cpu-64gb-x86-64
+    runs-on: ubuntu-latest
     env:
       GOPATH: ${{ github.workspace }}/go
     defaults:
